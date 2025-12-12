@@ -16,11 +16,11 @@ const items = (
     value: known,
   },
   {
-    label: "Need review",
+    label: "Needs review",
     value: unknown,
   },
   {
-    label: "Remaining",
+    label: "Not seen yet",
     value: Math.max(total - (known + unknown), 0),
   },
   {

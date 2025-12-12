@@ -18,14 +18,23 @@ interface QuizState {
 
 const todayKey = () => new Date().toISOString().slice(0, 10);
 
-function shuffle(length: number) {
+const shuffleRange = (length: number) => {
   const arr = Array.from({ length }, (_, i) => i);
   for (let i = arr.length - 1; i > 0; i -= 1) {
     const j = Math.floor(Math.random() * (i + 1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
-}
+};
+
+const shuffleList = (indices: number[]) => {
+  const arr = [...indices];
+  for (let i = arr.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+};
 
 const withSessionReset = (state: QuizState): QuizState => {
   const key = todayKey();
@@ -41,7 +50,7 @@ const withSessionReset = (state: QuizState): QuizState => {
 
 export const useQuizStore = create<QuizState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       wordOrder: [],
       currentIndex: 0,
       knownWordIds: [],
@@ -50,13 +59,18 @@ export const useQuizStore = create<QuizState>()(
       reviewedToday: [],
       ensureSession: (totalWords) => {
         if (!totalWords) return;
-        const current = get();
-        if (current.wordOrder.length === totalWords) return;
-        set({
-          wordOrder: shuffle(totalWords),
-          currentIndex: 0,
-          knownWordIds: [],
-          unknownWordIds: [],
+        set((prev) => {
+          const state = withSessionReset(prev);
+          if (state.wordOrder.length === totalWords) {
+            return state;
+          }
+          return {
+            ...state,
+            wordOrder: shuffleRange(totalWords),
+            currentIndex: 0,
+            knownWordIds: [],
+            unknownWordIds: [],
+          };
         });
       },
       swipe: (decision, totalWords) => {
@@ -64,10 +78,10 @@ export const useQuizStore = create<QuizState>()(
         set((prev) => {
           const state = withSessionReset(prev);
 
-          if (!prev.wordOrder.length) {
+          if (!state.wordOrder.length) {
             return {
               ...state,
-              wordOrder: shuffle(totalWords),
+              wordOrder: shuffleRange(totalWords),
               currentIndex: 0,
             };
           }
@@ -87,16 +101,23 @@ export const useQuizStore = create<QuizState>()(
             unknownSet.add(currentWordIndex);
           }
 
-          const nextIndex = Math.min(
-            state.currentIndex + 1,
-            state.wordOrder.length
-          );
+          let nextIndex = state.currentIndex + 1;
+          let nextOrder = state.wordOrder;
+          if (nextIndex >= state.wordOrder.length) {
+            if (unknownSet.size > 0) {
+              nextOrder = shuffleList(Array.from(unknownSet));
+              nextIndex = 0;
+            } else {
+              nextIndex = state.wordOrder.length;
+            }
+          }
 
           const reviewedSet = new Set(state.reviewedToday);
           reviewedSet.add(currentWordIndex);
 
           return {
             ...state,
+            wordOrder: nextOrder,
             currentIndex: nextIndex,
             knownWordIds: Array.from(knownSet),
             unknownWordIds: Array.from(unknownSet),
@@ -106,14 +127,43 @@ export const useQuizStore = create<QuizState>()(
       },
       skip: (totalWords) => {
         if (!totalWords) return;
-        set((prev) => ({
-          ...prev,
-          currentIndex: Math.min(prev.currentIndex + 1, prev.wordOrder.length),
-        }));
+        set((prev) => {
+          const state = withSessionReset(prev);
+          if (!state.wordOrder.length) {
+            return {
+              ...state,
+              wordOrder: shuffleRange(totalWords),
+              currentIndex: 0,
+            };
+          }
+
+          const currentWordIndex = state.wordOrder[state.currentIndex];
+          if (currentWordIndex === undefined) {
+            return state;
+          }
+
+          const nextOrder = [...state.wordOrder];
+          nextOrder.splice(state.currentIndex, 1);
+          const remaining = nextOrder.length;
+          const insertBase = Math.min(remaining, state.currentIndex);
+          const insertionOffset =
+            remaining - insertBase > 0
+              ? Math.floor(Math.random() * (remaining - insertBase + 1))
+              : 0;
+          const insertionIndex = insertBase + insertionOffset;
+          nextOrder.splice(insertionIndex, 0, currentWordIndex);
+          const nextIndex = Math.min(state.currentIndex, nextOrder.length - 1);
+
+          return {
+            ...state,
+            wordOrder: nextOrder,
+            currentIndex: nextIndex,
+          };
+        });
       },
       resetProgress: (totalWords) => {
         set({
-          wordOrder: shuffle(totalWords),
+          wordOrder: shuffleRange(totalWords),
           currentIndex: 0,
           knownWordIds: [],
           unknownWordIds: [],
@@ -144,7 +194,6 @@ export const useQuizStore = create<QuizState>()(
   )
 );
 
-// Selectors
 export const selectWordOrder = (state: QuizState) => state.wordOrder;
 export const selectCurrentIndex = (state: QuizState) => state.currentIndex;
 export const selectKnownWordIds = (state: QuizState) => state.knownWordIds;
