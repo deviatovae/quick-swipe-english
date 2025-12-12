@@ -1,6 +1,17 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 interface ProgressOverviewProps {
   total: number;
@@ -11,12 +22,6 @@ interface ProgressOverviewProps {
 export function ProgressOverview({ total, completed, onReset }: ProgressOverviewProps) {
   const percentage = total ? Math.round((completed / total) * 100) : 0;
 
-  const handleReset = () => {
-    if (window.confirm("Reset all progress?")) {
-      onReset();
-    }
-  };
-
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -24,9 +29,25 @@ export function ProgressOverview({ total, completed, onReset }: ProgressOverview
           <CardTitle>Overall progress</CardTitle>
           <p className="text-sm text-muted-foreground">{completed} of {total} reviewed</p>
         </div>
-        <Button variant="ghost" size="sm" onClick={handleReset}>
-          Reset
-        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="ghost" size="sm">
+              Reset
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Reset all progress?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will shuffle the deck and erase current known/unknown lists. This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogAction onClick={onReset}>Reset</AlertDialogAction>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </CardHeader>
       <CardContent>
         <Progress value={percentage} />

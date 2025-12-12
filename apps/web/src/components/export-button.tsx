@@ -1,5 +1,15 @@
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 import type { Word } from "@/types/word";
 
 interface WordEntry {
@@ -19,6 +29,19 @@ export function ExportButton({
   recentIndexes,
 }: ExportButtonProps) {
   const [range, setRange] = useState<"all" | "today">("all");
+  const [showEmptyDialog, setShowEmptyDialog] = useState(false);
+  const [emptyDialogContent, setEmptyDialogContent] = useState<{
+    title: string;
+    description: string;
+  }>({
+    title: "",
+    description: "",
+  });
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [pendingExport, setPendingExport] = useState<{
+    known: WordEntry[];
+    unknown: WordEntry[];
+  } | null>(null);
   const reviewedSet = useMemo(() => new Set(recentIndexes), [recentIndexes]);
 
   const filterEntries = (entries: WordEntry[]) =>
@@ -26,14 +49,7 @@ export function ExportButton({
       ? entries
       : entries.filter((entry) => reviewedSet.has(entry.index));
 
-  const handleExport = async () => {
-    const filteredKnown = filterEntries(knownEntries);
-    const filteredUnknown = filterEntries(unknownEntries);
-    if (range === "today" && filteredKnown.length + filteredUnknown.length === 0) {
-      window.alert("No words were reviewed today.");
-      return;
-    }
-
+  const performExport = async (filteredKnown: WordEntry[], filteredUnknown: WordEntry[]) => {
     const { jsPDF } = await import("jspdf");
     const doc = new jsPDF({ unit: "pt" });
     let cursorY = 40;
@@ -87,6 +103,34 @@ export function ExportButton({
 
     const suffix = range === "today" ? "-today" : "-all";
     doc.save(`vocabulary-quiz${suffix}.pdf`);
+    setPendingExport(null);
+  };
+
+  const handleExport = () => {
+    const hasAnyWords = knownEntries.length + unknownEntries.length > 0;
+    const filteredKnown = filterEntries(knownEntries);
+    const filteredUnknown = filterEntries(unknownEntries);
+    const hasFilteredWords = filteredKnown.length + filteredUnknown.length > 0;
+
+    if (!hasAnyWords) {
+      setEmptyDialogContent({
+        title: "No progress yet",
+        description: "Start reviewing words before exporting a report.",
+      });
+      setShowEmptyDialog(true);
+      return;
+    }
+
+    if (!hasFilteredWords) {
+      setEmptyDialogContent({
+        title: "No words in this range",
+        description: "Switch to “All time” or review some words first.",
+      });
+      setShowEmptyDialog(true);
+      return;
+    }
+    setPendingExport({ known: filteredKnown, unknown: filteredUnknown });
+    setShowConfirmDialog(true);
   };
 
   return (
@@ -105,6 +149,46 @@ export function ExportButton({
       <Button variant="secondary" className="w-full" onClick={handleExport}>
         Export results as PDF
       </Button>
+
+      <AlertDialog open={showEmptyDialog} onOpenChange={setShowEmptyDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{emptyDialogContent.title}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {emptyDialogContent.description}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setShowEmptyDialog(false)}>
+              Got it
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Export PDF?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will download your {range === "today" ? "today's" : "full"} results as a PDF file.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction
+              onClick={async () => {
+                if (pendingExport) {
+                  await performExport(pendingExport.known, pendingExport.unknown);
+                }
+                setShowConfirmDialog(false);
+              }}
+            >
+              Export
+            </AlertDialogAction>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
