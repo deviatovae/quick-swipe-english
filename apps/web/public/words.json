@@ -1,0 +1,12 @@
+[
+  { "id": 1, "word": "a, an", "pos": "indefinite article", "level": "A1" },
+  { "id": 2, "word": "about", "pos": "prep., adv.", "level": "A1" },
+  { "id": 3, "word": "above", "pos": "prep., adv.", "level": "A1" },
+  { "id": 4, "word": "across", "pos": "prep., adv.", "level": "A1" },
+  { "id": 5, "word": "action", "pos": "n.", "level": "A1" },
+  { "id": 6, "word": "activity", "pos": "n.", "level": "A1" },
+  { "id": 7, "word": "actor", "pos": "n.", "level": "A1" },
+  { "id": 8, "word": "actress", "pos": "n.", "level": "A1" },
+  { "id": 9, "word": "add", "pos": "v.", "level": "A1" },
+  { "id": 10, "word": "address", "pos": "n.", "level": "A1" } 
+]

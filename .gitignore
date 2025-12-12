@@ -1,0 +1,11 @@
+node_modules
+.pnpm-store
+.env
+.env.*
+dist
+build
+out
+.turbo
+.vscode
+.idea
+.DS_Store
