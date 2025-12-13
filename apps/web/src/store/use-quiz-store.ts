@@ -27,15 +27,6 @@ const shuffleRange = (length: number) => {
   return arr;
 };
 
-const shuffleList = (indices: number[]) => {
-  const arr = [...indices];
-  for (let i = arr.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-};
-
 const withSessionReset = (state: QuizState): QuizState => {
   const key = todayKey();
   if (state.sessionDate === key) {
@@ -101,23 +92,16 @@ export const useQuizStore = create<QuizState>()(
             unknownSet.add(currentWordIndex);
           }
 
-          let nextIndex = state.currentIndex + 1;
-          let nextOrder = state.wordOrder;
-          if (nextIndex >= state.wordOrder.length) {
-            if (unknownSet.size > 0) {
-              nextOrder = shuffleList(Array.from(unknownSet));
-              nextIndex = 0;
-            } else {
-              nextIndex = state.wordOrder.length;
-            }
-          }
-
           const reviewedSet = new Set(state.reviewedToday);
           reviewedSet.add(currentWordIndex);
 
+          let nextIndex = state.currentIndex + 1;
+          if (nextIndex > state.wordOrder.length) {
+            nextIndex = state.wordOrder.length;
+          }
+
           return {
             ...state,
-            wordOrder: nextOrder,
             currentIndex: nextIndex,
             knownWordIds: Array.from(knownSet),
             unknownWordIds: Array.from(unknownSet),
@@ -142,17 +126,25 @@ export const useQuizStore = create<QuizState>()(
             return state;
           }
 
+          if (state.wordOrder.length <= 1) {
+            return state;
+          }
+
           const nextOrder = [...state.wordOrder];
           nextOrder.splice(state.currentIndex, 1);
           const remaining = nextOrder.length;
-          const insertBase = Math.min(remaining, state.currentIndex);
-          const insertionOffset =
-            remaining - insertBase > 0
-              ? Math.floor(Math.random() * (remaining - insertBase + 1))
-              : 0;
-          const insertionIndex = insertBase + insertionOffset;
+
+          let nextIndex = state.currentIndex;
+          if (nextIndex >= remaining) {
+            nextIndex = 0;
+          }
+
+          const minInsert = Math.min(remaining, nextIndex + 1);
+          const maxInsert = remaining;
+          const span = maxInsert - minInsert + 1;
+          const insertionIndex =
+            span > 0 ? minInsert + Math.floor(Math.random() * span) : remaining;
           nextOrder.splice(insertionIndex, 0, currentWordIndex);
-          const nextIndex = Math.min(state.currentIndex, nextOrder.length - 1);
 
           return {
             ...state,
