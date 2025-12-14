@@ -3,6 +3,8 @@ import { ExportButton } from "@/components/export-button";
 import { ProgressOverview } from "@/components/progress-overview";
 import { QuizCard } from "@/components/quiz-card";
 import { StatisticsGrid } from "@/components/statistics-grid";
+import { AuthForm } from "@/components/auth/auth-form";
+import { Button } from "@/components/ui/button";
 import { useWords } from "@/hooks/use-words";
 import type { Word } from "@/types/word";
 import {
@@ -17,6 +19,7 @@ import {
   selectSkip,
   selectResetProgress,
 } from "@/store/use-quiz-store";
+import { useAuth } from "@/context/auth-context";
 
 function App() {
   const { words, isLoading, error } = useWords();
@@ -29,6 +32,7 @@ function App() {
   const swipe = useQuizStore(selectSwipe);
   const skip = useQuizStore(selectSkip);
   const resetProgress = useQuizStore(selectResetProgress);
+  const { user, loading: authLoading, signOutUser } = useAuth();
 
   useEffect(() => {
     if (words.length > 0) {
@@ -76,6 +80,22 @@ function App() {
 
   const completed = knownWordIds.length + unknownWordIds.length;
 
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted">
+        <p className="text-muted-foreground">Checking your session…</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted px-4">
+        <AuthForm />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted">
       <main className="mx-auto max-w-6xl px-4 py-12">
@@ -86,6 +106,12 @@ function App() {
           <p className="text-muted-foreground">
             Swipe cards, export progress, then continue spaced repetition in the Telegram bot.
           </p>
+          <div className="mt-2 flex items-center justify-center gap-3 text-sm text-muted-foreground">
+            <span>{user.email}</span>
+            <Button variant="ghost" size="sm" onClick={() => signOutUser()}>
+              Sign out
+            </Button>
+          </div>
         </header>
 
         {error && (
