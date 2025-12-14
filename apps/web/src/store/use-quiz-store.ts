@@ -16,7 +16,12 @@ interface QuizState {
   resetProgress: (totalWords: number) => void;
 }
 
-const todayKey = () => new Date().toISOString().slice(0, 10);
+const todayKey = () => {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${now.getFullYear()}-${month}-${day}`;
+};
 
 const shuffleRange = (length: number) => {
   const arr = Array.from({ length }, (_, i) => i);
