@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useCallback } from "react";
-import { ExportButton } from "@/components/export-button";
-import { ProgressOverview } from "@/components/progress-overview";
+import { X, Check, SkipForward } from "lucide-react";
+import { ProgressBar } from "@/components/progress-bar";
+import { ProfilePopover } from "@/components/profile-popover";
 import { QuizCard } from "@/components/quiz-card";
-import { StatisticsGrid } from "@/components/statistics-grid";
+import { BottomDrawer } from "@/components/bottom-drawer";
 import { AuthForm } from "@/components/auth/auth-form";
 import { Button } from "@/components/ui/button";
 import { useWords } from "@/hooks/use-words";
@@ -82,72 +83,84 @@ function App() {
 
   if (authLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted">
-        <p className="text-muted-foreground">Checking your session…</p>
+      <div className="bg-sunset-gradient flex min-h-screen items-center justify-center">
+        <p className="text-[#3D2C29]/60">Checking your session…</p>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted px-4">
+      <div className="bg-sunset-gradient flex min-h-screen items-center justify-center px-4">
         <AuthForm />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted">
-      <main className="mx-auto max-w-6xl px-4 py-12">
-        <header className="space-y-3 text-center">
-          <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground">
-          3,000-word Quiz
-          </p>
-          <p className="text-muted-foreground">
-            Swipe cards, export progress, then continue spaced repetition in the Telegram bot.
-          </p>
-          <div className="mt-2 flex items-center justify-center gap-3 text-sm text-muted-foreground">
-            <span>{user.email}</span>
-            <Button variant="ghost" size="sm" onClick={() => signOutUser()}>
-              Sign out
-            </Button>
-          </div>
+    <div className="bg-sunset-gradient flex min-h-screen flex-col overflow-x-hidden">
+      <div className="mx-auto flex w-full max-w-sm flex-1 flex-col px-4 pb-32 pt-6">
+        <header className="flex items-center gap-4">
+          <ProgressBar total={words.length} completed={completed} />
+          <ProfilePopover email={user.email} onSignOut={signOutUser} />
         </header>
 
         {error && (
-          <p className="mt-8 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-destructive">
+          <p className="mt-4 rounded-xl border border-red-300/50 bg-red-100/80 p-3 text-sm text-red-700">
             {error}
           </p>
         )}
 
-        <section className="mt-10 grid gap-6 lg:grid-cols-[2fr,1fr]">
-          <QuizCard
-            word={currentWord}
-            position={currentIndex}
-            total={words.length}
-            onDecision={handleDecision}
-            onSkip={handleSkip}
-            isLoading={isLoading}
-          />
-          <aside className="space-y-4">
-            <ProgressOverview
-              total={words.length}
-              completed={completed}
-              onReset={() => resetProgress(words.length)}
+        <section className="mt-6 flex flex-1 flex-col items-center justify-center">
+          <div className="w-full">
+            <QuizCard
+              word={currentWord}
+              onDecision={handleDecision}
+              isLoading={isLoading}
             />
-            <StatisticsGrid
-              known={knownWordIds.length}
-              unknown={unknownWordIds.length}
-              total={words.length}
-            />
-            <ExportButton
-              knownEntries={knownEntries}
-              unknownEntries={unknownEntries}
-              recentIndexes={reviewedToday}
-            />
-          </aside>
+          </div>
+
+          <div className="mt-6 flex items-center justify-center gap-4">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-14 w-14 rounded-full border-red-300 bg-white/80 text-red-500 shadow-lg backdrop-blur hover:bg-red-50 hover:text-red-600"
+              onClick={() => handleDecision("unknown")}
+              disabled={!currentWord}
+            >
+              <X className="h-6 w-6" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-12 w-12 rounded-full border-amber-300 bg-white/80 text-amber-600 shadow-md backdrop-blur hover:bg-amber-50"
+              onClick={handleSkip}
+              disabled={!currentWord}
+            >
+              <SkipForward className="h-5 w-5" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-14 w-14 rounded-full border-green-300 bg-white/80 text-green-500 shadow-lg backdrop-blur hover:bg-green-50 hover:text-green-600"
+              onClick={() => handleDecision("known")}
+              disabled={!currentWord}
+            >
+              <Check className="h-6 w-6" />
+            </Button>
+          </div>
         </section>
-      </main>
+      </div>
+
+      <BottomDrawer
+        known={knownWordIds.length}
+        unknown={unknownWordIds.length}
+        total={words.length}
+        knownEntries={knownEntries}
+        unknownEntries={unknownEntries}
+        recentIndexes={reviewedToday}
+        onReset={() => resetProgress(words.length)}
+      />
     </div>
   );
 }

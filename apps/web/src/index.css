@@ -4,48 +4,33 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 218 84% 54%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 240 5% 65%;
-    --secondary-foreground: 240 6% 10%;
-    --muted: 240 5% 90%;
-    --muted-foreground: 240 5% 35%;
-    --accent: 240 5% 90%;
-    --accent-foreground: 240 5% 10%;
-    --destructive: 0 62% 50%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5% 84%;
-    --input: 240 5% 84%;
-    --ring: 218 84% 54%;
-    --radius: 0.75rem;
-  }
+    /* Sunset Theme - Warm coral to peach */
+    --background: 40 100% 97%; /* #FFF9E6 soft cream */
+    --foreground: 15 25% 20%; /* #3D2C29 dark brown */
+    --card: 40 100% 99%; /* #FFFDF7 cream */
+    --card-foreground: 15 25% 20%;
+    --popover: 40 100% 99%;
+    --popover-foreground: 15 25% 20%;
+    --primary: 0 85% 71%; /* #FF6B6B coral */
+    --primary-foreground: 40 100% 99%;
+    --secondary: 30 100% 85%; /* #FFD9C0 peach */
+    --secondary-foreground: 15 25% 20%;
+    --muted: 30 50% 92%; /* warm beige */
+    --muted-foreground: 30 20% 40%; /* #8B7355 warm gray */
+    --accent: 38 92% 50%; /* #F59E0B golden amber */
+    --accent-foreground: 40 100% 99%;
+    --destructive: 0 72% 51%; /* #EF4444 */
+    --destructive-foreground: 40 100% 99%;
+    --border: 30 60% 85%; /* #FFD9C0 peach tint */
+    --input: 30 60% 85%;
+    --ring: 0 85% 71%;
+    --radius: 1rem;
 
-  .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 218 84% 54%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 218 84% 54%;
+    /* Custom sunset gradient colors */
+    --sunset-coral: #FF6B6B;
+    --sunset-peach: #FFE5B4;
+    --sunset-cream: #FFF9E6;
+    --sunset-amber: #F59E0B;
   }
 
   * {
@@ -53,6 +38,22 @@
   }
 
   body {
-    @apply min-h-screen bg-background font-sans text-foreground antialiased;
+    @apply min-h-screen bg-background font-sans text-foreground antialiased overflow-x-hidden;
+  }
+}
+
+@layer utilities {
+  .bg-sunset-gradient {
+    background: linear-gradient(
+      180deg,
+      var(--sunset-coral) 0%,
+      var(--sunset-peach) 50%,
+      var(--sunset-cream) 100%
+    );
+  }
+
+  .bg-card-frosted {
+    background: rgba(255, 253, 247, 0.85);
+    backdrop-filter: blur(12px);
   }
 }

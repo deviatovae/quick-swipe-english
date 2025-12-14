@@ -41,19 +41,22 @@ export function AuthForm() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-sm rounded-2xl border border-border/40 bg-card/80 p-6 shadow-xl backdrop-blur">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-1 text-center">
-          <h1 className="text-2xl font-semibold">
+    <div className="mx-auto w-full max-w-sm rounded-3xl border border-[#FFD9C0] bg-white/85 p-8 shadow-xl backdrop-blur-xl">
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="space-y-2 text-center">
+          <h1 className="text-2xl font-bold text-[#3D2C29]">
             {mode === "signin" ? "Welcome back" : "Create account"}
           </h1>
-          <p className="text-sm text-muted-foreground">
-            Sign {mode === "signin" ? "in" : "up"} to sync your vocabulary progress.
+          <p className="text-sm text-[#8B7355]">
+            Sign {mode === "signin" ? "in" : "up"} to sync your vocabulary
+            progress.
           </p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email" className="text-[#3D2C29]">
+            Email
+          </Label>
           <Input
             id="email"
             type="email"
@@ -62,10 +65,13 @@ export function AuthForm() {
             onChange={(event) => setEmail(event.target.value)}
             disabled={pending}
             required
+            className="rounded-xl border-[#FFD9C0] bg-white/80 text-[#3D2C29] placeholder:text-[#8B7355]/50 focus:border-[#FF6B6B] focus:ring-[#FF6B6B]"
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password" className="text-[#3D2C29]">
+            Password
+          </Label>
           <Input
             id="password"
             type="password"
@@ -75,22 +81,29 @@ export function AuthForm() {
             disabled={pending}
             required
             minLength={6}
+            className="rounded-xl border-[#FFD9C0] bg-white/80 text-[#3D2C29] placeholder:text-[#8B7355]/50 focus:border-[#FF6B6B] focus:ring-[#FF6B6B]"
           />
         </div>
 
         {(localError || error) && (
-          <p className="text-sm text-destructive">{localError ?? error}</p>
+          <p className="rounded-lg bg-rose-50 p-2 text-center text-sm text-rose-600">
+            {localError ?? error}
+          </p>
         )}
 
-        <Button className="w-full" type="submit" disabled={pending}>
+        <Button
+          className="w-full rounded-xl bg-[#FF6B6B] py-5 text-white shadow-lg hover:bg-[#FF6B6B]/90"
+          type="submit"
+          disabled={pending}
+        >
           {pending ? "Please wait..." : mode === "signin" ? "Sign in" : "Sign up"}
         </Button>
       </form>
-      <p className="mt-4 text-center text-sm text-muted-foreground">
+      <p className="mt-5 text-center text-sm text-[#8B7355]">
         {mode === "signin" ? "New here?" : "Already have an account?"}{" "}
         <button
           type="button"
-          className="font-medium text-primary underline-offset-4 hover:underline"
+          className="font-medium text-[#FF6B6B] underline-offset-4 hover:underline"
           onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
           disabled={pending}
         >
@@ -100,4 +113,3 @@ export function AuthForm() {
     </div>
   );
 }
-
