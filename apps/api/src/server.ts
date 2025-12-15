@@ -5,6 +5,8 @@ import fastifyJwt from '@fastify/jwt';
 import { loadConfig } from './env.js';
 import { initDb } from './db.js';
 import { registerAuthRoutes } from './routes/auth.js';
+import { registerProgressRoutes } from './routes/progress.js';
+import { registerTelegramRoutes } from './routes/telegram.js';
 
 export async function buildServer() {
   const config = loadConfig();
@@ -39,6 +41,8 @@ export async function buildServer() {
   );
 
   await registerAuthRoutes(app, db);
+  await registerProgressRoutes(app, db);
+  await registerTelegramRoutes(app);
 
   return { app, config };
 }
