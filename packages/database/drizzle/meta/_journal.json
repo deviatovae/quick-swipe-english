@@ -8,6 +8,13 @@
       "when": 1765675530089,
       "tag": "0000_easy_shaman",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1765744278581,
+      "tag": "0001_lowly_sleeper",
+      "breakpoints": true
     }
   ]
 }
