@@ -1,18 +1,7 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronUp, FileDown, RotateCcw, Check, X } from "lucide-react";
+import { ChevronUp, FileDown, Check, X, Clock3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogCancel,
-  AlertDialogAction,
-} from "@/components/ui/alert-dialog";
 import type { Word } from "@/types/word";
 
 interface WordEntry {
@@ -27,7 +16,6 @@ interface BottomDrawerProps {
   knownEntries: WordEntry[];
   unknownEntries: WordEntry[];
   recentIndexes: number[];
-  onReset: () => void;
 }
 
 export function BottomDrawer({
@@ -37,7 +25,6 @@ export function BottomDrawer({
   knownEntries,
   unknownEntries,
   recentIndexes,
-  onReset,
 }: BottomDrawerProps) {
   const [open, setOpen] = useState(false);
   const [range, setRange] = useState<"all" | "today">("all");
@@ -112,17 +99,29 @@ export function BottomDrawer({
     <div className="fixed inset-x-0 bottom-0 z-50">
       <button
         onClick={() => setOpen(!open)}
-        className="mx-auto flex w-full max-w-sm items-center justify-center gap-2 rounded-t-2xl bg-white/90 px-4 py-3 shadow-lg backdrop-blur-xl"
+        className="mx-auto flex w-full max-w-sm items-center justify-between rounded-t-2xl bg-white/90 px-4 py-3 shadow-lg backdrop-blur-xl"
       >
         <motion.div
           animate={{ rotate: open ? 180 : 0 }}
           transition={{ duration: 0.2 }}
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FFE5B4]/60 text-[#8B7355]"
         >
-          <ChevronUp className="h-5 w-5 text-[#8B7355]" />
+          <ChevronUp className="h-4 w-4" />
         </motion.div>
-        <span className="text-sm text-[#8B7355]">
-          {known} ✓ · {unknown} ✗ · {notSeen} left
-        </span>
+        <div className="flex items-center gap-4 text-sm font-medium text-[#3D2C29]">
+          <div className="flex items-center gap-1 text-emerald-600">
+            <Check className="h-4 w-4" />
+            <span>{known}</span>
+          </div>
+          <div className="flex items-center gap-1 text-rose-500">
+            <X className="h-4 w-4" />
+            <span>{unknown}</span>
+          </div>
+          <div className="flex items-center gap-1 text-amber-600">
+            <Clock3 className="h-4 w-4" />
+            <span>{notSeen}</span>
+          </div>
+        </div>
       </button>
 
       <AnimatePresence>
@@ -138,14 +137,14 @@ export function BottomDrawer({
               <div className="grid grid-cols-4 gap-2 text-center">
                 <div className="rounded-xl bg-emerald-50 p-3">
                   <div className="flex items-center justify-center gap-1 text-lg font-semibold text-emerald-600">
-                    <Check className="h-4 w-4" />
+                    <Check className="h-4 w-4 text-emerald-600" />
                     {known}
                   </div>
                   <p className="text-xs text-emerald-600/70">Known</p>
                 </div>
                 <div className="rounded-xl bg-rose-50 p-3">
                   <div className="flex items-center justify-center gap-1 text-lg font-semibold text-rose-500">
-                    <X className="h-4 w-4" />
+                    <X className="h-4 w-4 text-rose-500" />
                     {unknown}
                   </div>
                   <p className="text-xs text-rose-500/70">Review</p>
@@ -165,59 +164,28 @@ export function BottomDrawer({
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <select
-                  className="flex-1 rounded-xl border border-[#FFD9C0] bg-white/80 px-3 py-2 text-sm text-[#3D2C29]"
-                  value={range}
-                  onChange={(e) => setRange(e.target.value as "all" | "today")}
-                >
-                  <option value="all">All time</option>
-                  <option value="today">Today</option>
-                </select>
+                <div className="relative flex-1">
+                  <select
+                    className="w-full appearance-none rounded-xl border border-[#FFD9C0] bg-white/80 px-3 py-2 pr-8 text-sm text-[#3D2C29]"
+                    value={range}
+                    onChange={(e) => setRange(e.target.value as "all" | "today")}
+                  >
+                    <option value="all">All time</option>
+                    <option value="today">Today</option>
+                  </select>
+                  <ChevronUp className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 rotate-180 text-[#8B7355]" />
+                </div>
                 <Button
                   size="sm"
                   className="gap-2 rounded-xl bg-[#FF6B6B] text-white hover:bg-[#FF6B6B]/90"
                   onClick={handleExport}
                   disabled={knownEntries.length + unknownEntries.length === 0}
                 >
-                  <FileDown className="h-4 w-4" />
+                  <FileDown className="h-4 w-4 text-white" />
                   Export
                 </Button>
               </div>
 
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full gap-2 text-[#8B7355] hover:bg-[#FFE5B4]/30 hover:text-[#3D2C29]"
-                  >
-                    <RotateCcw className="h-4 w-4" />
-                    Reset progress
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="rounded-2xl border-[#FFD9C0] bg-white">
-                  <AlertDialogHeader>
-                    <AlertDialogTitle className="text-[#3D2C29]">
-                      Reset all progress?
-                    </AlertDialogTitle>
-                    <AlertDialogDescription className="text-[#8B7355]">
-                      This will shuffle the deck and erase current known/unknown
-                      lists. This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter className="flex flex-col gap-3 sm:flex-row sm:justify-end">
-                    <AlertDialogAction
-                      onClick={onReset}
-                      className="bg-[#FF6B6B] text-white hover:bg-[#FF6B6B]/90"
-                    >
-                      Reset
-                    </AlertDialogAction>
-                    <AlertDialogCancel className="border-[#FFD9C0] text-[#3D2C29]">
-                      Cancel
-                    </AlertDialogCancel>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
             </div>
           </motion.div>
         )}

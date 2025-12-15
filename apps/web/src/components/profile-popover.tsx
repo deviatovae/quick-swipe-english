@@ -35,10 +35,11 @@ export function ProfilePopover({ email, onSignOut }: ProfilePopoverProps) {
       {open && (
         <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-2xl border border-[#FFD9C0] bg-white/95 p-4 shadow-xl backdrop-blur-xl">
           <p className="truncate text-sm font-medium text-[#3D2C29]">{email}</p>
+
           <Button
             variant="ghost"
             size="sm"
-            className="mt-3 w-full justify-start gap-2 text-[#8B7355] hover:bg-[#FFE5B4]/30 hover:text-[#3D2C29]"
+            className="mt-1 w-full justify-start gap-2 text-[#8B7355] hover:bg-[#FFE5B4]/30 hover:text-[#3D2C29]"
             onClick={() => {
               setOpen(false);
               onSignOut();

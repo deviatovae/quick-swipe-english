@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="sunsetGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFB88C;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#FFA07A;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FF8C7B;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Circle background with sunset gradient -->
+  <circle cx="100" cy="100" r="90" fill="url(#sunsetGradient)"/>
+  
+  <!-- Speech bubble pointer -->
+  <polygon points="60,160 40,190 80,170" fill="url(#sunsetGradient)"/>
+  
+  <!-- Text "ENG" -->
+  <text x="100" y="120" font-size="60" font-weight="bold" fill="#FFFFFF" text-anchor="middle" font-family="Arial, sans-serif" letter-spacing="2">ENG</text>
+</svg>

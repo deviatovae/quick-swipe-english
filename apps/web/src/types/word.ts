@@ -3,4 +3,5 @@ export interface Word {
   word: string;
   pos: string;
   level: string;
+  translation?: string;
 }

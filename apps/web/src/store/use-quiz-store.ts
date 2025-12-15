@@ -1,7 +1,44 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { apiRequest } from '@/lib/api-client';
 
 type Decision = 'known' | 'unknown';
+
+const TOKEN_KEY = 'ai-workshop-token';
+
+function getAuthToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(TOKEN_KEY);
+}
+
+async function syncUnknownWord(wordId: number): Promise<void> {
+  const token = getAuthToken();
+  if (!token) return;
+
+  try {
+    await apiRequest(`/progress/${wordId}`, {
+      method: 'POST',
+      authToken: token,
+      body: JSON.stringify({}),
+    });
+  } catch (err) {
+    console.error('Failed to sync word progress:', err);
+  }
+}
+
+async function syncResetProgress(): Promise<void> {
+  const token = getAuthToken();
+  if (!token) return;
+
+  try {
+    await apiRequest('/progress', {
+      method: 'DELETE',
+      authToken: token,
+    });
+  } catch (err) {
+    console.error('Failed to reset progress:', err);
+  }
+}
 
 interface QuizState {
   wordOrder: number[];
@@ -11,7 +48,7 @@ interface QuizState {
   sessionDate: string;
   reviewedToday: number[];
   ensureSession: (totalWords: number) => void;
-  swipe: (decision: Decision, totalWords: number) => void;
+  swipe: (decision: Decision, totalWords: number, wordId?: number) => void;
   skip: (totalWords: number) => void;
   resetProgress: (totalWords: number) => void;
 }
@@ -69,8 +106,13 @@ export const useQuizStore = create<QuizState>()(
           };
         });
       },
-      swipe: (decision, totalWords) => {
+      swipe: (decision, totalWords, wordId) => {
         if (!totalWords) return;
+
+        if (decision === 'unknown' && wordId !== undefined) {
+          void syncUnknownWord(wordId);
+        }
+
         set((prev) => {
           const state = withSessionReset(prev);
 
@@ -159,6 +201,7 @@ export const useQuizStore = create<QuizState>()(
         });
       },
       resetProgress: (totalWords) => {
+        void syncResetProgress();
         set({
           wordOrder: shuffleRange(totalWords),
           currentIndex: 0,
