@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ArrowLeft, ArrowRight, ArrowUp, Send, CheckCircle } from "lucide-react";
+import { X, ArrowLeft, ArrowRight, ArrowUp, Send } from "lucide-react";
 
 interface RulesSidebarProps {
   open: boolean;
