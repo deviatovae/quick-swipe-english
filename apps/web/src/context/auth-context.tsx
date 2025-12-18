@@ -28,9 +28,7 @@ const TOKEN_KEY = "ai-workshop-token";
 const clearQuizStore = () => {
   if (typeof window === "undefined") return;
   try {
-    // Clear persisted storage
     useQuizStore.persist.clearStorage();
-    // Reset in-memory state
     useQuizStore.setState({
       wordOrder: [],
       currentIndex: 0,
@@ -70,7 +68,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (err) {
         console.error(err);
         localStorage.removeItem(TOKEN_KEY);
-        clearQuizStore();
         setToken(null);
         setUser(null);
       } finally {
@@ -97,7 +94,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             method: "POST",
             body: JSON.stringify({ email, password }),
           });
-          clearQuizStore();
           localStorage.setItem(TOKEN_KEY, result.token);
           setToken(result.token);
           setUser(result.user);
@@ -125,7 +121,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
       signOutUser() {
         localStorage.removeItem(TOKEN_KEY);
-        clearQuizStore();
         setToken(null);
         setUser(null);
       },
@@ -143,4 +138,3 @@ export function useAuth() {
   }
   return ctx;
 }
-
