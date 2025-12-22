@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "turbo run dev",
+    "dev": "pnpm --filter @ai-workshop/database build && pnpm --filter @ai-workshop/database drizzle:push && turbo run dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "format": "turbo run format",

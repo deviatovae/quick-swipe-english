@@ -5,7 +5,7 @@ const config: Config = {
   content: [
     './index.html',
     './src/**/*.{ts,tsx,js,jsx}',
-    '../../packages/**/*.{ts,tsx,js,jsx}',
+    '../../packages/**/src/**/*.{ts,tsx,js,jsx}',
   ],
   theme: {
     extend: {
