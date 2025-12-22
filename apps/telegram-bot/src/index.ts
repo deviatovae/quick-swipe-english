@@ -166,7 +166,7 @@ async function requireToken(ctx: Context): Promise<string | null> {
   if (!token) {
     await ctx.reply(
       '🔗 Please connect your account first\\!\n\n' +
-        'Go to the web app → Profile → *Connect Telegram*',
+        'Go to the web app → *Review in Telegram*',
       { parse_mode: 'MarkdownV2' }
     );
     return null;
