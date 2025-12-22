@@ -61,8 +61,7 @@ ai-workshop/
 ### Install & run all services
 
 ```bash
-git clone https://github.com/deviatovae/quick-swipe-english.git
-cd ai-workshop
+git clone https://github.com/deviatovae/quick-swipe-english.git 
 pnpm install        
 pnpm dev            
 ```
@@ -71,6 +70,7 @@ This will start **all three services in parallel**:
 - 🌐 **Web** (React/Vite): http://localhost:5173
 - 🔧 **API** (Fastify): http://localhost:3333
 - 🤖 **Telegram Bot**: Listens for Telegram events
+- `pnpm dev` also builds the shared database package and runs migrations (`drizzle:push`) so SQLite is ready automatically.
 
 Open `http://localhost:5173/` to use the quiz.
 
@@ -103,34 +103,35 @@ pnpm --filter telegram-bot dev
 
 ### API Setup (`apps/api`)
 
-Required environment variables in `.env`:
+Create `.env` (copy from `.env.example` and adjust as needed):
 ```
 PORT=3333
 HOST=0.0.0.0
-DATABASE_PATH=/path/to/app.sqlite
+# Point to the same DB file that migrations use
+# Prefer an absolute path; this relative example assumes the API runs from apps/api
+DATABASE_PATH=../../packages/database/data/app.sqlite
 CORS_ORIGIN=http://localhost:5173
-```
-
-Run migrations once (before first start or after schema changes):
-```bash
-pnpm --filter @ai-workshop/database drizzle:push
+JWT_SECRET=replace-with-long-random-string
+JWT_EXPIRES_IN=1h
 ```
 
 ### Web Setup (`apps/web`)
 
-Create `apps/web/.env.local`:
-```
-VITE_API_URL=http://localhost:3333
-```
+Create `apps/web/.env` (or copy from `.env.example` if present):
+
 
 ### Telegram Bot Setup (`apps/telegram-bot`)
 
-Create `apps/telegram-bot/.env`:
+Create `apps/telegram-bot/.env` (you can copy `env.example`):
 ```
 TELEGRAM_BOT_TOKEN=your_token_from_botfather
 API_URL=http://localhost:3333
 WORDS_PATH=apps/web/public/words.json
 ```
+
+Notes:
+- `TELEGRAM_BOT_TOKEN` is the BotFather token (required).
+- `DEFAULT_USER_TOKEN` is optional; if set, the bot uses that JWT for everyone (demo/single-user). Otherwise each user links their own account in the web app, which is the recommended multi-user flow.
 
 See [Telegram Bot README](./apps/telegram-bot/README.md) for detailed setup.
 
