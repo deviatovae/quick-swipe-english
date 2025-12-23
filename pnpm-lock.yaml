@@ -17,7 +17,7 @@ importers:
 
   apps/api:
     dependencies:
-      '@ai-workshop/database':
+      '@quick-swipe-english/database':
         specifier: workspace:*
         version: link:../../packages/database
       '@fastify/cors':

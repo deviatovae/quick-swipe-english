@@ -1,6 +1,6 @@
 import 'dotenv/config';
 
-import { DEFAULT_DATABASE_PATH } from '@ai-workshop/database';
+import { DEFAULT_DATABASE_PATH } from '@quick-swipe-english/database';
 
 export interface AppConfig {
   port: number;

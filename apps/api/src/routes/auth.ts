@@ -7,7 +7,7 @@ import {
   findUserByEmail,
   findUserById,
   type Database,
-} from "@ai-workshop/database";
+} from "@quick-swipe-english/database";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
@@ -74,4 +74,3 @@ export async function registerAuthRoutes(app: FastifyInstance, db: Database) {
     },
   );
 }
-

@@ -12,7 +12,7 @@ const distSchemaPath = resolve(root, 'dist/schema/index.js');
 if (!existsSync(distSchemaPath)) {
   // eslint-disable-next-line no-console
   console.warn(
-    '[drizzle] dist/schema/index.js not found. Run `pnpm --filter @ai-workshop/database run build` first.'
+    '[drizzle] dist/schema/index.js not found. Run `pnpm --filter @quick-swipe-english/database run build` first.'
   );
 }
 

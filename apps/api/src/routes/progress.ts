@@ -10,7 +10,7 @@ import {
   deleteAllWordProgress,
   getWordProgress,
   type Database,
-} from "@ai-workshop/database";
+} from "@quick-swipe-english/database";
 
 const wordIdParamsSchema = z.object({
   wordId: z.coerce.number().int().positive(),
@@ -153,4 +153,3 @@ export async function registerProgressRoutes(app: FastifyInstance, db: Database)
     }
   );
 }
-

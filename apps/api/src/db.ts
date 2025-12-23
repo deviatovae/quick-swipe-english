@@ -1,4 +1,4 @@
-import { createDatabase } from '@ai-workshop/database';
+import { createDatabase } from '@quick-swipe-english/database';
 
 import type { AppConfig } from './env.js';
 
