@@ -1,6 +1,9 @@
 import { sql } from "drizzle-orm";
-import { sqliteTable, text, integer, real, unique } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, real, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { users } from "./users.js";
+
+export const WORD_STATUS = ["unknown", "known"] as const;
+export type WordStatus = (typeof WORD_STATUS)[number];
 
 export const wordProgress = sqliteTable(
   "word_progress",
@@ -18,12 +21,17 @@ export const wordProgress = sqliteTable(
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
       .default(sql`(unixepoch())`),
+    status: text("status", { enum: WORD_STATUS })
+      .notNull()
+      .default("unknown"),
   },
   (table) => ({
-    userWordUnique: unique().on(table.userId, table.wordId),
+    userWordUnique: uniqueIndex("word_progress_user_word_unique").on(
+      table.userId,
+      table.wordId,
+    ),
   })
 );
 
 export type WordProgressRow = typeof wordProgress.$inferSelect;
 export type WordProgressInsert = typeof wordProgress.$inferInsert;
-

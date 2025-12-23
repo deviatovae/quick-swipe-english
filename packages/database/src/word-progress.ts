@@ -2,7 +2,11 @@ import { randomUUID } from 'node:crypto';
 import { eq, and, lte } from 'drizzle-orm';
 
 import type { Database } from './client.js';
-import { wordProgress, type WordProgressRow } from './schema/index.js';
+import {
+  wordProgress,
+  type WordProgressRow,
+  type WordStatus,
+} from './schema/index.js';
 
 /**
  * SM-2 Algorithm implementation
@@ -72,8 +76,11 @@ export function calculateSM2(input: SM2Input): SM2Output {
 export async function addWordToProgress(
   db: Database,
   userId: string,
-  wordId: number
+  wordId: number,
+  options: { status?: WordStatus; initialQuality?: number } = {}
 ): Promise<WordProgressRow> {
+  const { status = 'unknown', initialQuality = 1 } = options;
+
   const existing = await db.query.wordProgress.findFirst({
     where: and(
       eq(wordProgress.userId, userId),
@@ -94,10 +101,11 @@ export async function addWordToProgress(
     userId,
     wordId,
     easeFactor: 2.5,
-    interval: 1,
-    repetitions: 0,
+    interval: initialQuality >= 3 ? 6 : 1,
+    repetitions: initialQuality >= 3 ? 1 : 0,
     nextReviewDate: now,
     lastReviewDate: now,
+    status,
   });
 
   const created = await db.query.wordProgress.findFirst({
@@ -115,7 +123,8 @@ export async function updateWordProgress(
   db: Database,
   userId: string,
   wordId: number,
-  quality: number
+  quality: number,
+  status?: WordStatus
 ): Promise<WordProgressRow> {
   const existing = await db.query.wordProgress.findFirst({
     where: and(
@@ -143,6 +152,7 @@ export async function updateWordProgress(
       repetitions: sm2Result.repetitions,
       nextReviewDate: sm2Result.nextReviewDate,
       lastReviewDate: new Date(),
+      ...(status ? { status } : {}),
     })
     .where(eq(wordProgress.id, existing.id));
 
@@ -175,6 +185,7 @@ export async function getDueWords(
   return db.query.wordProgress.findMany({
     where: and(
       eq(wordProgress.userId, userId),
+      eq(wordProgress.status, 'unknown'),
       lte(wordProgress.nextReviewDate, now)
     ),
   });

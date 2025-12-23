@@ -17,7 +17,8 @@ const wordIdParamsSchema = z.object({
 });
 
 const updateBodySchema = z.object({
-  quality: z.number().int().min(0).max(5),
+  quality: z.number().int().min(0).max(5).optional(),
+  status: z.enum(["unknown", "known"]).optional(),
 });
 
 export async function registerProgressRoutes(app: FastifyInstance, db: Database) {
@@ -72,7 +73,10 @@ export async function registerProgressRoutes(app: FastifyInstance, db: Database)
         return reply.code(400).send({ error: "Invalid word ID" });
       }
 
-      const progress = await addWordToProgress(db, userId, params.data.wordId);
+      const progress = await addWordToProgress(db, userId, params.data.wordId, {
+        status: "unknown",
+        initialQuality: 1,
+      });
       return reply.send(progress);
     }
   );
@@ -94,21 +98,26 @@ export async function registerProgressRoutes(app: FastifyInstance, db: Database)
         return reply.code(400).send({ error: "Invalid word ID" });
       }
 
-      const body = updateBodySchema.safeParse(request.body);
-      if (!body.success) {
+      const body = updateBodySchema.safeParse(request.body ?? {});
+      if (!body.success || (body.data.quality === undefined && body.data.status === undefined)) {
         return reply.code(400).send({ error: "Invalid quality value" });
       }
 
       const existing = await getWordProgress(db, userId, params.data.wordId);
       if (!existing) {
-        return reply.code(404).send({ error: "Word not in progress" });
+        const created = await addWordToProgress(db, userId, params.data.wordId, {
+          status: body.data.status,
+          initialQuality: body.data.quality ?? 4,
+        });
+        return reply.send(created);
       }
 
       const progress = await updateWordProgress(
         db,
         userId,
         params.data.wordId,
-        body.data.quality
+        body.data.quality ?? 1,
+        body.data.status
       );
       return reply.send(progress);
     }

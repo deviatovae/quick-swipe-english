@@ -26,6 +26,21 @@ async function syncUnknownWord(wordId: number): Promise<void> {
   }
 }
 
+async function syncKnownWord(wordId: number): Promise<void> {
+  const token = getAuthToken();
+  if (!token) return;
+
+  try {
+    await apiRequest(`/progress/${wordId}`, {
+      method: 'PUT',
+      authToken: token,
+      body: JSON.stringify({ status: 'known', quality: 4 }),
+    });
+  } catch (err) {
+    console.error('Failed to sync known word:', err);
+  }
+}
+
 async function syncResetProgress(): Promise<void> {
   const token = getAuthToken();
   if (!token) return;
@@ -34,6 +49,7 @@ async function syncResetProgress(): Promise<void> {
     await apiRequest('/progress', {
       method: 'DELETE',
       authToken: token,
+      body: JSON.stringify({}),
     });
   } catch (err) {
     console.error('Failed to reset progress:', err);
@@ -51,6 +67,10 @@ interface QuizState {
   swipe: (decision: Decision, totalWords: number, wordId?: number) => void;
   skip: (totalWords: number) => void;
   resetProgress: (totalWords: number) => void;
+  hydrateFromServer: (
+    indexes: { known: number[]; unknown: number[] },
+    totalWords: number
+  ) => void;
 }
 
 const todayKey = () => {
@@ -111,6 +131,8 @@ export const useQuizStore = create<QuizState>()(
 
         if (decision === 'unknown' && wordId !== undefined) {
           void syncUnknownWord(wordId);
+        } else if (decision === 'known' && wordId !== undefined) {
+          void syncKnownWord(wordId);
         }
 
         set((prev) => {
@@ -211,6 +233,23 @@ export const useQuizStore = create<QuizState>()(
           reviewedToday: [],
         });
       },
+      hydrateFromServer: (unknownIndexes, totalWords) => {
+        if (!totalWords) return;
+        const uniqueUnknown = Array.from(new Set(unknownIndexes.unknown)).filter(
+          (idx) => idx >= 0 && idx < totalWords
+        );
+        const uniqueKnown = Array.from(new Set(unknownIndexes.known)).filter(
+          (idx) => idx >= 0 && idx < totalWords
+        );
+        set({
+          wordOrder: shuffleRange(totalWords),
+          currentIndex: 0,
+          knownWordIds: uniqueKnown,
+          unknownWordIds: uniqueUnknown,
+          sessionDate: todayKey(),
+          reviewedToday: [],
+        });
+      },
     }),
     {
       name: 'quiz-store',
@@ -243,3 +282,5 @@ export const selectEnsureSession = (state: QuizState) => state.ensureSession;
 export const selectSwipe = (state: QuizState) => state.swipe;
 export const selectSkip = (state: QuizState) => state.skip;
 export const selectResetProgress = (state: QuizState) => state.resetProgress;
+export const selectHydrateFromServer = (state: QuizState) =>
+  state.hydrateFromServer;

@@ -31,6 +31,7 @@ import {
   selectSwipe,
   selectSkip,
   selectResetProgress,
+  selectHydrateFromServer,
 } from "@/store/use-quiz-store";
 import { useAuth } from "@/context/auth-context";
 import { apiRequest } from "@/lib/api-client";
@@ -47,9 +48,11 @@ function App() {
   const swipe = useQuizStore(selectSwipe);
   const skip = useQuizStore(selectSkip);
   const resetProgress = useQuizStore(selectResetProgress);
+  const hydrateFromServer = useQuizStore(selectHydrateFromServer);
   const { user, loading: authLoading, signOutUser, token, isNewUser, clearNewUserFlag } = useAuth();
   const [linkLoading, setLinkLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [serverHydrated, setServerHydrated] = useState(false);
 
   // Auto-open sidebar for new users
   useEffect(() => {
@@ -105,6 +108,60 @@ function App() {
   }, [skip, words.length]);
 
   const completed = knownWordIds.length + unknownWordIds.length;
+
+  useEffect(() => {
+    if (!user || !token || !words.length || serverHydrated) return;
+    // If local progress already exists, don't override it
+    if (knownWordIds.length || unknownWordIds.length) {
+      setServerHydrated(true);
+      return;
+    }
+
+    let canceled = false;
+
+    async function fetchProgress() {
+      try {
+        const progress = await apiRequest<Array<{ wordId: number; status?: string }>>("/progress", {
+          authToken: token,
+        });
+        const mapped = progress.reduce(
+          (acc, p) => {
+            const idx = words.findIndex((w) => w.id === p.wordId);
+            if (idx >= 0) {
+              if (p.status === "known") {
+                acc.known.push(idx);
+              } else {
+                acc.unknown.push(idx);
+              }
+            }
+            return acc;
+          },
+          { known: [] as number[], unknown: [] as number[] },
+        );
+        hydrateFromServer(mapped, words.length);
+      } catch (err) {
+        console.error("Failed to hydrate progress from server", err);
+      } finally {
+        if (!canceled) {
+          setServerHydrated(true);
+        }
+      }
+    }
+
+    void fetchProgress();
+
+    return () => {
+      canceled = true;
+    };
+  }, [
+    user,
+    token,
+    words,
+    knownWordIds.length,
+    unknownWordIds.length,
+    hydrateFromServer,
+    serverHydrated,
+  ]);
 
   const handleConnectTelegram = useCallback(async () => {
     if (!token || !TELEGRAM_BOT_USERNAME) return;
